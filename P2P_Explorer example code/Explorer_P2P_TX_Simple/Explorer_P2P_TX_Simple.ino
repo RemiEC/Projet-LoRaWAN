@@ -11,10 +11,7 @@ unsigned long readDelay = 60000; // Time to read for messages in ms (max 4294967
 const char CR = '\r';
 const char LF = '\n';
 
-//'auth' proper to each device - set 'auth' to 242 for second device
-byte auth = 241;
 int devNonce = 0;
-byte payload_temp[2];
 
 // Configuring the RN2483 for P2P
 void LoraP2P_Setup()
@@ -58,13 +55,10 @@ void LORA_Write(char* Data)
 }
 
 // Send Data array (in HEX)
-void LORA_Write_byte(byte* Data)
+void LORA_Write_String(String Data)
 {  
   Serial2.print("radio tx ");
-  Serial2.print("baba");
-  //Serial2.print(Data[1]);
-  //Serial2.print(Data[2]);
-  //Serial2.print(Data[3]);
+  Serial2.print(Data);
   Serial2.print("\r\n");
   //Serial2.flush(); // --> a checker si nécessaire
 
@@ -109,6 +103,50 @@ void FlushSerialBufferIn()
 // end code with all the necessary functions
 
 
+
+// Authentification (includes D1 or D2) - DevNonce - (Heure/date)
+String header_function(){
+  devNonce++;
+  
+  //Reset devNonce for managing bits 
+  if(devNonce == 255){
+    devNonce = 0; 
+  }
+
+  //'auth' proper to each device - set 'auth' to 242 for second device
+  String auth = "241";
+
+  //We can add date and time - to CRUSH JAMMING
+  /*
+  //If we can fetch date and time
+  if(DateTime.available()) {
+    unsigned long hd = DateTime.now();
+  }
+  */
+
+  //Return the complete header
+  return auth + ' ' + String(devNonce);
+}
+
+//Payload
+//Transform the temperature read into bytes
+String payload_function(){
+  String payload;
+  uint16_t temp = getTemperature();
+  payload = String(temp);
+  return payload;
+}
+
+//Get the temperature from the Sodaq sensor
+uint16_t getTemperature(){
+  //get the voltage in mV
+  float mVolts = (float) analogRead(TEMP_SENSOR) * 3300.0 / 1023.0;
+  // --> to get the temperature in decimal, the formula is "(mVolts - 500) / 10". Therefore, by doing "(mVolts - 500) * 10", it's like multiplying "(mVolts - 500) / 10" by 100.  
+  int temp = (mVolts - 500) * 10;
+  //We get a temp like such : 24.58C = 2458
+  return int(temp);
+}
+
 void setup() {
   // put your setup code here, to run once:
   SerialUSB.begin(57600);
@@ -122,62 +160,26 @@ void setup() {
   LoraP2P_Setup();
 }
 
-
-// Authentification (includes D1 or D2) - DevNonce - (Heure/date)
-void header(){
-  devNonce++;
-  
-  //Reset devNonce for managing bits 
-  if(devNonce == 255){
-    devNonce = 0; 
-  }
-  //convert in to bits
-  byte byte_devNonce = byte(devNonce); 
-
-  //We can add date and time - to CRUSH JAMMING
-  /*
-  //If we can fetch date and time
-  if(DateTime.available()) {
-    unsigned long hd = DateTime.now();
-  }
-  */
-}
-
-//Payload
-//Transform the temperature read into bytes
-void payload(){
-  uint16_t temp = getTemperature();
-  
-  payload_temp[0] = highByte(temp);
-  payload_temp[1] = lowByte(temp);
-}
-
-//Get the temperature from the Sodaq sensor
-uint16_t getTemperature(){
-  //get the voltage in mV
-  float mVolts = (float) analogRead(TEMP_SENSOR) * 3300.0 / 1023.0;
-  // --> to get the temperature in decimal, the formula is "(mVolts - 500) / 10". Therefore, by doing "(mVolts - 500) * 10", it's like multiplying "(mVolts - 500) / 10" by 100.  
-  int temp = (mVolts - 500) * 10;
-  //We get a temp like such : 24.58C = 2458
-  return int(temp);
-}
-
-
 void loop() {
 
-  // Some data to send
-  //char Data[100] = "48656c6c6f20576f726c6421";
-  
-  byte message[4];
-  message[0] = auth;
-  message[1] = byte(devNonce);
-  message[2] = payload_temp[0];
-  message[3] = payload_temp[1];
+  // Data to send
+  String Data = header_function() + ' ' + payload_function();
 
+  // Convert Data into HEX
+  String Data_HEX;
+  for (int i = 0; i < Data.length(); i++)
+  {
+    Data_HEX += String(Data[i], HEX);
+  }
+  
+  // Some prints to check what we are sending
+  SerialUSB.println(Data);
+  SerialUSB.println(Data_HEX);
+
+  // Send the data
   digitalWrite(LED_RED, HIGH);
   delay(5000);
-  LORA_Write_byte(message);
+  LORA_Write_String(Data_HEX);
   digitalWrite(LED_RED, LOW); // To let us know when the data is send
   delay(50);
-
 }

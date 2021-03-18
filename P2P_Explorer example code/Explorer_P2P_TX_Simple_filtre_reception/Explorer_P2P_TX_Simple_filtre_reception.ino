@@ -6,7 +6,7 @@
 int trPower = 1;         // Transreceiver power  ( can be -3 to 15)
 String SprFactor = "sf12";  // Spreadingsfactor     (can be sf7 to sf12)
 uint8_t max_dataSize = 100; // Maximum charcount to avoid writing outside of string
-unsigned long readDelay = 60000; // Time to read for messages in ms (max 4294967295 ms, 0 to disable) --> A MODIFIER PROBABLEMENT PAR RAPPORT AU PARAMETRE DONNE A LA FONCTION "rx"
+unsigned long readDelay = 10000; // Time to read for messages in ms (max 4294967295 ms, 0 to disable) --> A MODIFIER PROBABLEMENT PAR RAPPORT AU PARAMETRE DONNE A LA FONCTION "rx". En fait ça c'est genre le temps pendant lequel tu attends quand tu fais "radio rx". Passé ce délai, ça renvoie une erreur de Timeout
 
 const char CR = '\r';
 const char LF = '\n';
@@ -99,6 +99,8 @@ void setup() {
   SerialUSB.begin(57600);
   Serial2.begin(57600);
 
+  pinMode(LED_GREEN, OUTPUT);
+
   while (!SerialUSB && millis() < 1000);
 
   LoraP2P_Setup();
@@ -107,7 +109,7 @@ void setup() {
 void loop() {
   
   // Some data to send
-  char Data[max_dataSize] = "48656c6c6f20576f726c6421";
+  char Data[100] = "48656c6c6f20576f726c6421";
 
   digitalWrite(LED_GREEN, HIGH);
   delay(5000);

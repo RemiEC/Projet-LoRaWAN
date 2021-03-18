@@ -197,29 +197,18 @@ void setup() {
 
 void loop()
 {
-  
-  // On dirait que le HIGH et le LOW sont inversés
+  // On dirait que le HIGH et le LOW sont inversés pour la led green
   
   digitalWrite(LED_GREEN, HIGH);
   char Data[100] = "";  // Array to store the message in
 
 
-  // A MODIFIER POUR AVOIR DES STATEMENTS PERSONNALISES, JE PENSE QU'ACTUELLEMENT LA CONDITION DU IF EST NULLE
+  // A MODIFIER POUR AVOIR DES STATEMENTS PERSONNALISES PEUT ETRE
   //Checks if a message is received
   if (LORA_Read(Data) == 1)
   {
     digitalWrite(LED_GREEN, LOW); // Light up LED if there is a message
-    SerialUSB.println(Data);
-    SerialUSB.println(HEX(Data));   
+    SerialUSB.println(Data); 
     delay(1);
   }
-
-  /*
-  if (Serial2.available() > 0)
-  {
-    // LANCER THREAD POUR LOAD READ
-    Thread myThread = Thread();
-    myThread.onRun(LORA_Read_Test);
-  }
-  */
 }

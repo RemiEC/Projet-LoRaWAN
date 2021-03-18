@@ -8,7 +8,7 @@
 int trPower = 1;         // Transreceiver power  ( can be -3 to 15)
 String SprFactor = "sf12";  // Spreadingsfactor     (can be sf7 to sf12)
 uint8_t max_dataSize = 100; // Maximum charcount to avoid writing outside of string
-unsigned long readDelay = 60000; // Time to read for messages in ms (max 4294967295 ms, 0 to disable) --> A MODIFIER PROBABLEMENT PAR RAPPORT AU PARAMETRE DONNE A LA FONCTION "rx"
+unsigned long readDelay = 60000; // Time to read for messages in ms (max 4294967295 ms, 0 to disable) --> A MODIFIER PROBABLEMENT PAR RAPPORT AU PARAMETRE DONNE A LA FONCTION "rx". En fait ça c'est genre le temps pendant lequel tu attends quand tu fais "radio rx". Passé ce délai, ça renvoie une erreur de Timeout
 
 
 // Configuring the RN2483 for P2P
@@ -53,8 +53,9 @@ int LORA_Read(char* Data)
   String Buffer = "";
 
   // Setting up the receiver to read for incomming messages
-  // Ici on est en continuous reception (parce qu'il y a le 0) mais on devrait mettre une limite 
+  // Ici on est en continuous reception (parce qu'il y a le 0) mais on devrait mettre une limite
   // Cette limite sera une limite de taille donc il faudra déterminer la taille maximum d'un message pour sécuriser un peu 
+  // Si on met 10 ça veut dire qu'on attend 10 bytes et si on a autre chose que 10 bytes, ça throw une erreur
   Serial2.print("radio rx 0\r\n");
   delay(100);
   FlushSerialBufferIn(); // --> A VOIR SI ON DOIT ENLEVER (FAIRE TEST SANS)
@@ -131,7 +132,7 @@ void LORA_Read_Test()
   // Cette limite sera une limite de taille donc il faudra déterminer la taille maximum d'un message pour sécuriser un peu 
   Serial2.print("radio rx 0\r\n");
   delay(100);
-  FlushSerialBufferIn(); // --> A VOIR SI ON DOIT ENLEVER (FAIRE TEST SANS)
+  //FlushSerialBufferIn(); // --> A VOIR SI ON DOIT ENLEVER (FAIRE TEST SANS)
 
   while (messageFlag == 0) // As long as there is no message
   {
@@ -186,6 +187,8 @@ void setup() {
   SerialUSB.begin(57600);
   Serial2.begin(57600);
 
+  pinMode(LED_GREEN, OUTPUT);
+
   while (!SerialUSB && millis() < 1000);
 
   LoraP2P_Setup();
@@ -195,22 +198,19 @@ void loop() {
   
   // On dirait que le HIGH et le LOW sont inversés
   
-  //digitalWrite(LED_GREEN, HIGH);
-  //char Data[100] = "";  // Array to store the message in
+  digitalWrite(LED_GREEN, HIGH);
+  char Data[100] = "";  // Array to store the message in
 
-
+  
   // A MODIFIER POUR AVOIR DES STATEMENTS PERSONNALISES, JE PENSE QU'ACTUELLEMENT LA CONDITION DU IF EST NULLE
-  //if (LORA_Read(Data) == 1)
-  //{
-   // digitalWrite(LED_GREEN, LOW); // Light up LED if there is a message
-    //SerialUSB.println(Data);
-    //delay(50);
-  //}
-
-  if (Serial2.available() > 0)
+  if (LORA_Read(Data) == 1)
   {
-    // LANCER THREAD POUR LOAD READ
-    Thread myThread = Thread();
-    myThread.onRun(LORA_Read_Test);
+    digitalWrite(LED_GREEN, LOW); // Light up LED if there is a message
+    SerialUSB.println(Data);
+    delay(50);
   }
+
+
+  // En vrai on aura que LORA_Read(Data) puis un delay ou un sleep genre et aussi peut être les fonctions d'encryption et tout
+  
 }
