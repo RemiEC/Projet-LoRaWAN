@@ -110,73 +110,33 @@ void FlushSerialBufferIn()
   }
 }
 
+// Convert to ASCII char from a Hex char[2]
+//    ex: "41" >> 'A'
+char HexCharToASCIIChar(char* HexChar){
+  byte res;
 
+  //Most Significant Bits
+  if(((byte)HexChar[0] >= 48) && ((byte)HexChar[0] <= 57)) //0-9
+    res = (((byte)HexChar[0] - 48) << 4);
+  else if(((byte)HexChar[0] >= 65) && ((byte)HexChar[0] <= 70)) //A-F
+    res = (((byte)HexChar[0] - 65 + 10) << 4);
+  else if(((byte)HexChar[0] >= 97) && ((byte)HexChar[0] <= 102)) //a-f
+    res = (((byte)HexChar[0] - 97 + 10) << 4);
+  else
+    return 0;
 
+  //Less Significant Bits    
+  if(((byte)HexChar[1] >= 48) && ((byte)HexChar[1] <= 57)) //0-9
+    res |= ((byte)HexChar[1] - 48);
+  else if(((byte)HexChar[1] >= 65) && ((byte)HexChar[1] <= 70)) //A-F
+    res |= ((byte)HexChar[1] - 65 + 10);
+  else if(((byte)HexChar[1] >= 97) && ((byte)HexChar[1] <= 102)) //a-f
+    res |= ((byte)HexChar[1] - 97 + 10);
+  else
+    return 0;
 
-
-
-/*
-void LORA_Read_Test()
-{
-  int messageFlag = 0;
-  String dataStr = "radio_rx  ";
-  String errorStr = "radio_err";
-  String Buffer = "";
-  String KeyAuth = "48656c";
-  int counter_KeyAuth = 0; 
-  char Data[100] = "";  // Array to store the message in
-
-  // Setting up the receiver to read for incomming messages
-  // Ici on est en continuous reception (parce qu'il y a le 0) mais on devrait mettre une limite 
-  // Cette limite sera une limite de taille donc il faudra déterminer la taille maximum d'un message pour sécuriser un peu 
-  Serial2.print("radio rx 0\r\n");
-  delay(100);
-  FlushSerialBufferIn(); // --> A VOIR SI ON DOIT ENLEVER (FAIRE TEST SANS)
-
-  while (messageFlag == 0) // As long as there is no message
-  {
-    while (!Serial2.available()); // while there is nothing to read
-    
-    delay(50);  // Some time for the buffer to fill
-
-    // Read message from RN2483 LORA chip
-    while (Serial2.available() > 0 && Serial2.peek() != '\n')
-    {
-      Buffer += (char)Serial2.read();
-    }
-
-    // If there is an incoming message
-    if (Buffer.startsWith(dataStr)) // if there is a message in the buffer
-    {
-      int i = 10;  // Incoming data starts at the 11th character --> look at the length of dataStr 
-
-      // Seperate message from string till end of datastring
-      while (Buffer[i] != '\r' && i - 10 < max_dataSize)
-      {
-        if (Buffer[i] != KeyAuth[counter_KeyAuth])
-        {
-          // Close thread
-        }
-        counter_KeyAuth++;
-        
-        Data[i - 10] = Buffer[i];
-        i++;
-      }
-      messageFlag = 1; // Message received
-    }
-    else if (Buffer.startsWith(errorStr, 0))
-    {
-      messageFlag = 2; // Read error or Watchdogtimer timeout
-    }
-  }
-
-  #ifdef DEBUG
-    SerialUSB.println(Buffer);
-  #endif
+  return (char)res;
 }
-*/
-
-
 
 // end code with all the necessary functions
 
@@ -196,19 +156,28 @@ void setup() {
 }
 
 void loop()
-{
-  // On dirait que le HIGH et le LOW sont inversés pour la led green
-  
+{ 
   digitalWrite(LED_GREEN, HIGH);
   char Data[100] = "";  // Array to store the message in
 
-
-  // A MODIFIER POUR AVOIR DES STATEMENTS PERSONNALISES PEUT ETRE
   //Checks if a message is received
   if (LORA_Read(Data) == 1)
   {
     digitalWrite(LED_GREEN, LOW); // Light up LED if there is a message
-    SerialUSB.println(Data); 
+    SerialUSB.println(Data);
+
+    // Conversion HEX to string
+    String Data_string = ""; 
+    int i = 0;
+    while (Data[i] != NULL)
+    {
+      char symbol[2];
+      symbol[0] = Data[i];
+      symbol[1] = Data[i+1];
+      Data_string += HexCharToASCIIChar(symbol);
+      i = i+2;
+    }
+    SerialUSB.println(Data_string);
     delay(1);
   }
 }

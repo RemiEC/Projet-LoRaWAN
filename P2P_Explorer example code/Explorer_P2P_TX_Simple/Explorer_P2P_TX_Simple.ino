@@ -41,19 +41,6 @@ void LoraP2P_Setup()
   FlushSerialBufferIn();
 }
 
-
-// Send Data array (in HEX)
-void LORA_Write(char* Data)
-{
-  Serial2.print("radio tx ");
-  Serial2.print(Data);
-  Serial2.print("\r\n");
-  Serial2.flush(); // --> a checker si nécessaire
-
-  waitTillMessageGone();
-
-}
-
 // Send Data array (in HEX)
 void LORA_Write_String(String Data)
 {  
@@ -100,10 +87,6 @@ void FlushSerialBufferIn()
 }
 
 
-// end code with all the necessary functions
-
-
-
 // Authentification (includes D1 or D2) - DevNonce - (Heure/date)
 String header_function(){
   devNonce++;
@@ -146,6 +129,12 @@ uint16_t getTemperature(){
   //We get a temp like such : 24.58C = 2458
   return int(temp);
 }
+
+
+// end code with all the necessary functions
+
+
+
 
 void setup() {
   // put your setup code here, to run once:
