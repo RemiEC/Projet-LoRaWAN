@@ -99,7 +99,7 @@ String header_function(){
   String time = String(__TIME__).substring(0,5);
 
   //'auth' proper to each device - set 'auth' to 242 for second device
-  String auth = "241";
+  String auth = "242";
 
   //Return the complete header
   return auth + ' ' + time + ' ' + date + ' ' + String(devNonce);
@@ -161,7 +161,8 @@ void loop() {
 
   // Send the data
   digitalWrite(LED_RED, HIGH);
-  delay(5000);
+  Serial2.print("sys sleep 10000\r\n"); // to set our communication to lora mode (in opposition to FSK mode)
+  //delay(10000);
   LORA_Write_String(Data_HEX);
   digitalWrite(LED_RED, LOW); // To let us know when the data is send
   delay(50);

@@ -160,19 +160,10 @@ void SendToApp(String Data)
 
   int ind6 = Data.indexOf(' ', ind5+1 );
   String temp = Data.substring(ind5+1);
-
-  /*
-  SerialUSB.println(auth);
-  SerialUSB.println(heure);
-  SerialUSB.println(mois);
-  SerialUSB.println(jour);
-  SerialUSB.println(devNonce);
-  SerialUSB.println(temp);
-  */
   
+  // Statements
   if (auth == "241" || auth == "242")
   {
-    SerialUSB.println("1");
     res += auth[2]; // know which device sent something
     bool dev_validation = false;
 
@@ -180,22 +171,16 @@ void SendToApp(String Data)
     
     if (auth[2] == '1')
     {
-      SerialUSB.println("2");
-      SerialUSB.println(devNonce1);
-      SerialUSB.println(devNonce);
       if(devNonce1 <= devNonce.toInt())
       {
-        SerialUSB.println("3");
         dev_validation = true;
         devNonce1 = devNonce.toInt()+1;
       }
     }
     else
     {
-      SerialUSB.println("4");
       if(devNonce2 <= devNonce.toInt())
       {
-        SerialUSB.println("5");
         dev_validation = true;
         devNonce2 = devNonce.toInt()+1;
       }
@@ -203,13 +188,11 @@ void SendToApp(String Data)
     
     if(dev_validation)
       {
-        SerialUSB.println("6");
         // Transmission error message
         SerialUSB.println(auth + ' ' + heure + ' ' + mois + ' ' + jour + ' ' + devNonce + ' ' + temp);
       }
     else
     {
-      SerialUSB.println("7");
       // Transmission error message
       SerialUSB.println("error");
     }
@@ -234,8 +217,7 @@ void setup() {
 }
 
 void loop()
-{ 
-  /*
+{
   digitalWrite(LED_GREEN, HIGH);
   char Data[100] = "";  // Array to store the message in
 
@@ -256,11 +238,7 @@ void loop()
       Data_string += HexCharToASCIIChar(symbol);
       i = i+2;
     }
-    SerialUSB.println(Data_string);
     SendToApp(Data_string);
     delay(1);
   }
-  */
-  SendToApp("241 11:39 MAR 22 1 2709");
-  delay(100);
 }
