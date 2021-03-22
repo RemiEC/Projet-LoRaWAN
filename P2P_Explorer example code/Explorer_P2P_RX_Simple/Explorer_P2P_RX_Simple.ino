@@ -162,7 +162,7 @@ void SendToApp(String Data)
   String temp = Data.substring(ind5+1);
   
   // Statements
-  if (auth == "241" || auth == "242")
+  if (auth == "241" || auth == "242" || auth == "243" || auth == "244")
   {
     res += auth[2]; // know which device sent something
     bool dev_validation = false;
