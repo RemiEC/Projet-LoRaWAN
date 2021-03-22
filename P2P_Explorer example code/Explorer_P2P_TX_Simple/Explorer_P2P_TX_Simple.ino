@@ -8,6 +8,11 @@ String SprFactor = "sf12";  // Spreadingsfactor     (can be sf7 to sf12)
 uint8_t max_dataSize = 100; // Maximum charcount to avoid writing outside of string
 unsigned long readDelay = 60000; // Time to read for messages in ms (max 4294967295 ms, 0 to disable) --> A MODIFIER PROBABLEMENT PAR RAPPORT AU PARAMETRE DONNE A LA FONCTION "rx"
 
+String auth1 = "241";
+String auth2 = "242";
+//String auth3 = "243";
+//String auth4 = "244";
+
 const char CR = '\r';
 const char LF = '\n';
 
